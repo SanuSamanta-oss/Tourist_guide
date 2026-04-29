@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WanderQuest — Treasure Hunt Travel Explorer</title>
+  <meta name="description" content="Discover hidden treasures around the world with verified local pricing, on-demand guides, and epic rewards.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===== LOADING SCREEN ===== -->
+<div id="loading-screen">
+  <div class="loader-compass"></div>
+  <div class="loader-text">WanderQuest</div>
+</div>
+
+<!-- ===== LANGUAGE MODAL ===== -->
+<div id="language-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h2 data-t="langTitle">Choose Your Language</h2>
+    <div id="lang-grid" class="lang-grid"></div>
+  </div>
+</div>
+
+<!-- ===== SATELLITE VIEW MODAL ===== -->
+<div id="satellite-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width:900px;">
+    <div class="sat-header">
+      <h2 id="sat-title">Satellite View</h2>
+      <button class="close-btn" onclick="closeSatelliteModal()">✕</button>
+    </div>
+    <div id="satellite-map"></div>
+  </div>
+</div>
+
+<!-- ===== DESTINATION DETAIL MODAL ===== -->
+<div id="destination-detail" class="modal-overlay hidden">
+  <div class="modal-content" id="dest-detail-body" style="max-width:800px;"></div>
+</div>
+
+<!-- ===== PARTICLES ===== -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ===== NAVIGATION ===== -->
+<nav id="main-nav">
+  <a href="#hero" class="nav-logo"><i class="fas fa-compass"></i> WanderQuest</a>
+  <ul class="nav-links">
+    <li><a href="#map-section" data-t="navMap">Map</a></li>
+    <li><a href="#treasure-section" data-t="navHunt">Treasure Hunt</a></li>
+    <li><a href="#pricing-section" data-t="navPrice">Pricing</a></li>
+    <li><a href="#guides-section" data-t="navGuide">Guides</a></li>
+    <li><a href="#rewards-section" data-t="navReward">Rewards</a></li>
+    <li><button class="nav-links nav-lang-btn" id="nav-lang-trigger">🌐</button></li>
+  </ul>
+  <button class="hamburger" id="hamburger-btn"><i class="fas fa-bars"></i></button>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-badge" data-t="heroTag">🧭 Your Adventure Awaits</div>
+    <h1 class="hero-title" data-t="heroTitle">Discover Hidden Treasures Around The World</h1>
+    <p class="hero-sub" data-t="heroSub">A treasure-hunt experience guiding you through top destinations with verified pricing, local guides, and epic rewards.</p>
+    <div class="hero-btns">
+      <a href="#map-section" class="btn-primary"><i class="fas fa-map-marked-alt"></i> <span data-t="btnExplore">Explore Map</span></a>
+      <a href="#treasure-section" class="btn-secondary"><i class="fas fa-trophy"></i> <span data-t="btnHunt">Start Hunt</span></a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num" data-count="20" data-suffix="+">0</div><div class="stat-label" data-t="statDest">Destinations</div></div>
+      <div class="stat-item"><div class="stat-num" data-count="15" data-suffix="+">0</div><div class="stat-label" data-t="statCountry">Countries</div></div>
+      <div class="stat-item"><div class="stat-num" data-count="3000" data-suffix="+">0</div><div class="stat-label" data-t="statReward">Rewards</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MAP EXPLORER ===== -->
+<section id="map-section" class="section">
+  <div class="section-header animate-in">
+    <div class="section-tag" data-t="mapTag">WORLD EXPLORER</div>
+    <h2 class="section-title" data-t="mapTitle">Interactive World Map</h2>
+    <p class="section-desc" data-t="mapDesc">Pin any destination, toggle satellite view, and explore every corner of the globe.</p>
+  </div>
+  <div class="map-controls animate-in">
+    <button class="map-filter-btn active" data-filter="all" data-t="filterAll">🌍 All</button>
+    <button class="map-filter-btn" data-filter="cultural" data-t="filterCultural">🏛️ Cultural</button>
+    <button class="map-filter-btn" data-filter="nature" data-t="filterNature">🌿 Nature</button>
+    <button class="map-filter-btn" data-filter="adventure" data-t="filterAdventure">⛰️ Adventure</button>
+  </div>
+  <div id="map-container" class="animate-in"></div>
+  <div class="map-toggle animate-in">
+    <button class="active" data-tile="standard" data-t="mapStandard">🗺️ Standard</button>
+    <button data-tile="satellite" data-t="mapSatellite">🛰️ Satellite</button>
+  </div>
+</section>
+
+<!-- ===== TREASURE HUNT ===== -->
+<section id="treasure-section" class="section">
+  <div class="section-header animate-in">
+    <div class="section-tag" data-t="huntTag">TREASURE HUNT</div>
+    <h2 class="section-title" data-t="huntTitle">Collect Treasures Worldwide</h2>
+    <p class="section-desc" data-t="huntDesc">Complete challenges at each destination to earn points and unlock exclusive badges.</p>
+  </div>
+  <div id="treasure-list" class="treasure-list animate-in"></div>
+</section>
+
+<!-- ===== VERIFIED PRICING ===== -->
+<section id="pricing-section" class="section">
+  <div class="section-header animate-in">
+    <div class="section-tag" data-t="priceTag">VERIFIED PRICING</div>
+    <h2 class="section-title" data-t="priceTitle">Avoid Tourist Scams</h2>
+    <p class="section-desc" data-t="priceDesc">Compare real local prices vs inflated tourist prices. Travel smart, save money.</p>
+  </div>
+  <div id="pricing-dest-selector" class="map-controls animate-in" style="margin-bottom:24px;"></div>
+  <div id="pricing-content" class="animate-in"></div>
+</section>
+
+<!-- ===== HIRE GUIDES ===== -->
+<section id="guides-section" class="section">
+  <div class="section-header animate-in">
+    <div class="section-tag" data-t="guideTag">LOCAL GUIDES</div>
+    <h2 class="section-title" data-t="guideTitle">Hire Trusted Guides</h2>
+    <p class="section-desc" data-t="guideDesc">Book verified local experts who speak your language and know every hidden gem.</p>
+  </div>
+  <div id="guides-grid" class="cards-grid animate-in"></div>
+</section>
+
+<!-- ===== REWARDS ===== -->
+<section id="rewards-section" class="section">
+  <div class="section-header animate-in">
+    <div class="section-tag" data-t="rewardTag">YOUR REWARDS</div>
+    <h2 class="section-title" data-t="rewardTitle">Rewards Dashboard</h2>
+    <p class="section-desc" data-t="rewardDesc">Track your points, badges, and treasure hunt progress.</p>
+  </div>
+  <div class="rewards-summary animate-in">
+    <div class="reward-stat-card"><div class="big-num" id="rwd-points">0</div><div class="label" data-t="rwdPoints">Total Points</div></div>
+    <div class="reward-stat-card"><div class="big-num" id="rwd-badges">0</div><div class="label" data-t="rwdBadges">Badges Earned</div></div>
+    <div class="reward-stat-card"><div class="big-num" id="rwd-places">0</div><div class="label" data-t="rwdPlaces">Places Visited</div></div>
+    <div class="reward-stat-card"><div class="big-num" id="rwd-rank">🌱</div><div class="label" data-t="rwdRank">Explorer Rank</div></div>
+  </div>
+  <h3 class="section-title" style="font-size:1.4rem;text-align:center;margin-bottom:24px;" data-t="badgesTitle">Your Badges</h3>
+  <div id="badges-grid" class="badges-grid animate-in"></div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-logo">🧭 WanderQuest</div>
+  <div class="footer-links">
+    <a href="#" data-t="footerAbout">About</a>
+    <a href="#" data-t="footerContact">Contact</a>
+    <a href="#" data-t="footerPrivacy">Privacy</a>
+  </div>
+  <p class="footer-copy" data-t="footerCopy">© 2026 WanderQuest. All rights reserved.</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/destinations.js"></script>
+<script src="js/language.js"></script>
+<script src="js/map.js"></script>
+<script src="js/features.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
